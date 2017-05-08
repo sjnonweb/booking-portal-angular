@@ -1,0 +1,220 @@
+<div class="container">
+	<div class="row text-center">	
+		<h1 class="bg-primary">Booking portal <small class="bg-primary">built with angular 2</small></h1>
+		<hr>
+	</div>
+
+
+	<div class="row">
+		<div class="col-md-6 col-sm-6 text-center">
+			<h3 class="bg-danger">Book Here</h3>
+			<form>
+				<div class="row">
+
+					<div class="col-md-12 col-sm-12">
+						<div class="form-group">
+							<label for="facility">Facility</label>
+							<select class="form-control" name="facility" id="facility" required [(ngModel)]="facility" (change)="timeSlotUpdate();">
+								<option value="gym">Gym</option>
+								<option value="clubhouse">Club House</option>
+								<option value="tennis">Tennis Arena</option>
+							</select>
+						</div>
+					</div>
+					<div class="col-md-6 col-sm-6">
+						<div class="form-group">
+							<label for="name">Name</label>
+							<input type="text" class="form-control" name="name" id="name" required [(ngModel)]="name">
+						</div>
+					</div>
+					<div class="col-md-6 col-sm-6">
+						<div class="form-group">
+							<label for="startdate">Start date</label>
+							<input type="date" min="{{currDate | date:'y-MM-dd'}}" class="form-control" name="startdate" id="startdate" required [(ngModel)]="startDate">
+						</div>
+					</div>
+					<div class="col-md-6 col-sm-6">
+						<div class="form-group">
+							<label for="starttime">Start Time</label>
+							<select class="form-control" name="starttime" id="starttime" required [(ngModel)]="startTime" (change)="durationUpdate();">
+								<ng-container *ngIf="facilityNotSelected">
+									<option disabled>select a facility!</option>
+								</ng-container>
+								<ng-container *ngIf="currSlot">
+									<option *ngFor="let time of currSlot" value="{{time}}">{{time}}</option>
+								</ng-container>
+							</select>
+						</div>
+					</div>
+					<div class="col-md-6 col-sm-6">
+						<div class="form-group">
+							<label for="duration">Duration</label>
+							<select class="form-control" name="duration" id="duration" required [(ngModel)]="duration">
+								<ng-container *ngIf="!startTime">
+									<option disabled>select start time!</option>
+								</ng-container>
+								<ng-container *ngIf="startTime">
+									<option disabled selected>Select in hours</option>
+									<option *ngFor="let i of durationArray" value="{{i}}">{{i}}</option>
+								</ng-container>
+							</select>
+						</div>
+					</div>
+					
+					
+				</div>
+				<div *ngIf="error" class="row text-center">
+					<div class="col-md-12 col-sm-12">
+						<p style="background-color: antiquewhite" class="text-danger">Form is invalid</p>
+					</div>
+				</div>
+				<div *ngIf="pastBooking" class="row text-center">
+					<div class="col-md-12 col-sm-12">
+						<p style="background-color: antiquewhite" class="text-danger">careful there!! you cannot book a slot in the past.</p>
+					</div>
+				</div>
+				<div *ngIf="alreadyBooked" class="row text-center">
+					<div class="col-md-12 col-sm-12">
+						<p style="background-color: antiquewhite" class="text-danger">Slot is already booked. Please book for a different timing.</p>
+					</div>
+				</div>
+				<div *ngIf="success" class="row text-center">
+					<div class="col-md-12 col-sm-12">
+						<p style="background-color: antiquewhite" class="text-success">Booked Successfully. Please pay {{currentBooking.cost}} Rs at the time of admission!</p>
+					</div>
+				</div>
+				<div class="row text-center">
+					<div class="col-md-12 col-sm-12">
+						<button class="btn btn-success" (click)="book()">BOOK</button>
+					</div>
+				</div>
+			</form>
+			<br>
+
+		</div>
+		<div class="col-md-6 col-sm-6 text-center">
+			<h3 class="bg-danger">Booking list here!</h3>
+			<div class="panel-group">
+				<div class="panel panel-default">
+					<div class="panel-heading">
+						<h4 class="panel-title">
+							<a data-toggle="collapse" href="#gym">GYM</a>
+						</h4>
+					</div>
+					<div id="gym" class="panel-collapse collapse">
+						<div class="row">
+						<div class="col-md-12 col-sm-12">
+						<table class="table table-condensed table-hover table-bordered table-striped table-responsive">
+							<thead>
+								<tr>
+									<th class="text-center">Name</th>
+									<th class="text-center">Date</th>
+									<th class="text-center">Time</th>
+									<th class="text-center">Duration</th>
+									<th class="text-center">Price</th>
+								</tr>
+							</thead>
+							<tbody *ngIf="gymData">
+								<tr *ngFor="let gymmer of gymData">
+									<td>{{gymmer.name}}</td>
+									<td>{{gymmer.startDate | date:'dd MMM y'}}</td>
+									<td>{{gymmer.startDate | date:'H:mm'}}</td>
+									<td>{{gymmer.duration}} hours</td>
+									<td>{{gymmer.cost}} Rs</td>
+								</tr>
+							</tbody>
+						</table>
+						</div>
+						</div>
+					</div>
+				</div>
+				<div class="panel panel-default">
+					<div class="panel-heading">
+						<h4 class="panel-title">
+							<a data-toggle="collapse" href="#clubhouse">Club House</a>
+						</h4>
+					</div>
+					<div id="clubhouse" class="panel-collapse collapse">
+						<div class="row">
+						<div class="col-md-12 col-sm-12">
+						<table class="table table-condensed table-hover table-bordered table-striped table-responsive">
+							<thead>
+								<tr>
+									<th class="text-center">Name</th>
+									<th class="text-center">Date</th>
+									<th class="text-center">Time</th>
+									<th class="text-center">Duration</th>
+									<th class="text-center">Price</th>
+								</tr>
+							</thead>
+							<tbody *ngIf="clubData">
+								<tr *ngFor="let clubber of clubData">
+									<td>{{clubber.name}}</td>
+									<td>{{clubber.startDate | date:'dd MMM y'}}</td>
+									<td>{{clubber.startDate | date:'H:mm'}}</td>
+									<td>{{clubber.duration}} hours</td>
+									<td>{{clubber.cost}} Rs</td>
+								</tr>
+							</tbody>
+						</table>
+						</div>
+						</div>
+					</div>
+				</div>
+				<div class="panel panel-default">
+					<div class="panel-heading">
+						<h4 class="panel-title">
+							<a data-toggle="collapse" href="#tennisArena">Tennis Arena</a>
+						</h4>
+					</div>
+					<div id="tennisArena" class="panel-collapse collapse">
+						<div class="row">
+						<div class="col-md-12 col-sm-12">
+						<table class="table table-condensed table-hover table-bordered table-striped table-responsive">
+							<thead>
+								<tr>
+									<th class="text-center">Name</th>
+									<th class="text-center">Date</th>
+									<th class="text-center">Time</th>
+									<th class="text-center">Duration</th>
+									<th class="text-center">Price</th>
+								</tr>
+							</thead>
+							<tbody *ngIf="tennisData">
+								<tr *ngFor="let player of tennisData">
+									<td>{{player.name}}</td>
+									<td>{{player.startDate | date:'dd MMM y'}}</td>
+									<td>{{player.startDate | date:'H:mm'}}</td>
+									<td>{{player.duration}} hours</td>
+									<td>{{player.cost}} Rs</td>
+								</tr>
+							</tbody>
+						</table>
+						</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<hr>
+	<div class="row text-center bg-warning">
+		<div class="col-md-offset-1 col-md-10">
+			<p class="text-primary">Rules:</p>
+			<ol class="text-left">	
+				<li>All facilites will open at 10AM and will be closed by 10PM</li>
+				<li>gym and tennis arena can be booked on hourly basis</li>
+				<li>club house can be booked as a 6 hour slot. first slot will cost you 100 Rs/hour and the second slot 500 Rs/hour.</li>
+			</ol>
+		</div>
+	</div>
+	<br>
+	<br>
+	<div class="row text-center bg-success">
+		<div class="col-md-12 col-sm-12">
+			<p>sjnmishra8@gmail.com</p>
+		</div>
+	</div>
+
+</div>
+
